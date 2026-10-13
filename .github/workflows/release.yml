@@ -1,0 +1,175 @@
+# One plugin, one release. Tag <id>-v<version> (hello-note-v0.1.0).
+# Every release is created with --latest=false, including the long-lived
+# catalog release that carries index.json. Do not point clients at
+# /releases/latest: whichever plugin was published last would win.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "*-v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # MovieClaw v0.37.0. The same pin as ci.yml.
+  MOVIECLAW_REF: e229717c43b2d48986f8f51c19b86348a527cb5a
+  CATALOG_TAG: catalog
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TAG: ${{ github.ref_name }}
+      # Ed25519 PKCS#8 PEM. Absent → index is unsigned and says so.
+      # Optional RELEASE_SIGNING_KEY_ID selects key_id (default catalog-1).
+      RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+      RELEASE_SIGNING_KEY_ID: ${{ secrets.RELEASE_SIGNING_KEY_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag against the manifest
+        id: tag
+        run: python3 scripts/check_tag.py
+
+      - name: Checkout MovieClaw
+        uses: actions/checkout@v4
+        with:
+          repository: movieclaw/MovieClaw
+          ref: ${{ env.MOVIECLAW_REF }}
+          path: .movieclaw
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .movieclaw/pyproject.toml
+
+      - name: Install pinned MovieClaw
+        run: python3 -m pip install -e .movieclaw jsonschema cryptography
+
+      - name: Validate with Manifest and check_compat
+        env:
+          PLUGIN_ID: ${{ steps.tag.outputs.id }}
+        run: |
+          set -euo pipefail
+          python3 .movieclaw/src/movieclaw_agent/builtin-skills/movieclaw-plugin-dev/scripts/check_plugin.py "plugins/${PLUGIN_ID}"
+
+      - name: Pack
+        id: pack
+        env:
+          PLUGIN_ID: ${{ steps.tag.outputs.id }}
+          PLUGIN_VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          file="dist/${PLUGIN_ID}-${PLUGIN_VERSION}.mcplugin"
+          line="$(python3 scripts/pack.py "plugins/${PLUGIN_ID}" --output "$file")"
+          echo "$line"
+          sha="$(printf '%s\n' "$line" | awk '{print $3}')"
+          size="$(printf '%s\n' "$line" | awk '{print $5}')"
+          printf '%s\n' "$sha" > "${file}.sha256"
+          {
+            echo "file=${file}"
+            echo "sha=${sha}"
+            echo "size=${size}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish the plugin release
+        env:
+          PLUGIN_ID: ${{ steps.tag.outputs.id }}
+          PLUGIN_VERSION: ${{ steps.tag.outputs.version }}
+          ASSET: ${{ steps.pack.outputs.file }}
+        run: |
+          set -euo pipefail
+          notes="plugins/${PLUGIN_ID}/CHANGELOG.md"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" "${ASSET}.sha256" --clobber
+          else
+            args=(
+              gh release create "$TAG" "$ASSET" "${ASSET}.sha256"
+              --latest=false
+              --verify-tag
+              --title "${PLUGIN_ID} ${PLUGIN_VERSION}"
+            )
+            if [ -f "$notes" ]; then
+              args+=(--notes-file "$notes")
+            else
+              args+=(--notes "${PLUGIN_ID} ${PLUGIN_VERSION}")
+            fi
+            case "$PLUGIN_VERSION" in
+              *-*) args+=(--prerelease) ;;
+            esac
+            "${args[@]}"
+          fi
+
+      - name: Rebuild the catalog index
+        env:
+          PLUGIN_ID: ${{ steps.tag.outputs.id }}
+          PLUGIN_VERSION: ${{ steps.tag.outputs.version }}
+          SHA: ${{ steps.pack.outputs.sha }}
+          SIZE: ${{ steps.pack.outputs.size }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/prev
+          stamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          args=(
+            python3 scripts/generate_index.py
+            --output dist/index.json
+            --generated-at "$stamp"
+            --release "$PLUGIN_ID" "$PLUGIN_VERSION" "$SHA" "$SIZE" "$stamp"
+          )
+          if gh release view "$CATALOG_TAG" >/dev/null 2>&1; then
+            gh release download "$CATALOG_TAG" --pattern index.json --dir dist/prev || true
+          fi
+          if [ -f dist/prev/index.json ]; then
+            args+=(--previous dist/prev/index.json)
+          fi
+          if [ -n "${RELEASE_SIGNING_KEY}" ]; then
+            args+=(--sign --sig dist/index.json.sig)
+          fi
+          "${args[@]}"
+
+      - name: Upload index.json to the catalog release
+        run: |
+          set -euo pipefail
+          if ! gh release view "$CATALOG_TAG" >/dev/null 2>&1; then
+            gh release create "$CATALOG_TAG" \
+              --latest=false \
+              --title "Plugin catalog" \
+              --notes "Machine-readable plugin index. This release is updated in place. Do not use /releases/latest."
+          fi
+          gh release edit "$CATALOG_TAG" --latest=false
+          if [ -n "${RELEASE_SIGNING_KEY}" ]; then
+            gh release upload "$CATALOG_TAG" dist/index.json dist/index.json.sig --clobber
+          else
+            if gh release view "$CATALOG_TAG" --json assets --jq '.assets[].name' | grep -qx 'index.json.sig'; then
+              gh release delete-asset "$CATALOG_TAG" index.json.sig --yes
+            fi
+            gh release upload "$CATALOG_TAG" dist/index.json --clobber
+          fi
+
+      - name: Commit index.json on main
+        run: |
+          set -euo pipefail
+          cp dist/index.json /tmp/index.json
+          git fetch origin main
+          git checkout -B main origin/main
+          cp /tmp/index.json index.json
+          git add index.json
+          if git diff --cached --quiet; then
+            echo "index.json unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update plugin index for ${TAG}"
+          git push origin main

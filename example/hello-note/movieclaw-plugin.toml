@@ -1,0 +1,16 @@
+[plugin]
+id = "hello-note"
+title = "入库笔记"
+version = "0.1.0"
+entry = "hello_note"
+runtime = "process"
+sdk = "^1.0"
+description = "整理入库完成后，按设置记下最近一部片子的标题。这是给插件作者看的最小示例。"
+
+[requires]
+"library.ingest.completed" = "^1.0"
+"plugin-data" = "^1.0"
+"kernel/durable-events" = "^1.0"
+
+[permissions]
+operations = []

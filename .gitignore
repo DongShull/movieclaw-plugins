@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.mcplugin
+.movieclaw/
+dist/
+*.egg-info/
+.venv/

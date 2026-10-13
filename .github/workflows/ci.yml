@@ -1,0 +1,100 @@
+# Pull requests: schema-check the catalog, and run MovieClaw's Manifest /
+# check_compat (via the plugin-dev check_plugin.py) on changed plugin
+# directories plus example/hello-note. A README-only change skips the
+# MovieClaw install.
+
+name: ci
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # MovieClaw v0.37.0. Do not float this to a branch tip.
+  MOVIECLAW_REF: e229717c43b2d48986f8f51c19b86348a527cb5a
+
+jobs:
+  catalog:
+    name: catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check index.json, pack the example, run script tests
+        run: |
+          set -euo pipefail
+          python3 -m pip install jsonschema
+          python3 -m unittest discover -s scripts/tests -t scripts -v
+          python3 scripts/generate_index.py --check index.json
+
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.pick.outputs.run }}
+      dirs: ${{ steps.pick.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select plugin directories
+        id: pick
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 scripts/ci_dirs.py
+
+  validate:
+    name: validate
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout MovieClaw
+        uses: actions/checkout@v4
+        with:
+          repository: movieclaw/MovieClaw
+          ref: ${{ env.MOVIECLAW_REF }}
+          path: .movieclaw
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .movieclaw/pyproject.toml
+
+      - name: Install pinned MovieClaw
+        run: python3 -m pip install -e .movieclaw
+
+      - name: Manifest, check_compat, and plugin tests
+        env:
+          DIRS: ${{ needs.changes.outputs.dirs }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DIRS" ]; then
+            echo "没有要校验的插件目录" >&2
+            exit 1
+          fi
+          read -r -a dirs <<< "$DIRS"
+          checker=".movieclaw/src/movieclaw_agent/builtin-skills/movieclaw-plugin-dev/scripts/check_plugin.py"
+          for dir in "${dirs[@]}"; do
+            echo "::group::${dir}"
+            python3 "$checker" "$dir"
+            if [ -d "${dir}/tests" ]; then
+              python3 -m unittest discover -s "${dir}/tests" -t "$dir" -v
+            fi
+            echo "::endgroup::"
+          done
