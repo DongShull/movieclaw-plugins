@@ -1,6 +1,10 @@
 # Pull requests: schema-check the catalog, and run MovieClaw's Manifest /
 # check_compat (via the plugin-dev check_plugin.py) on changed plugin
-# directories plus example/hello-note. A README-only change skips the
+# directories, example/hello-note, and the reference copies listed in
+# example/UPSTREAM.json. Those copies pass check_plugin.py against
+# MOVIECLAW_REF (exit 0; warnings are not failures). Their tests are not
+# in the tree — they do not run standalone — so the unittest step below
+# sees no tests/ directory and skips them. A README-only change skips the
 # MovieClaw install.
 
 name: ci
@@ -93,6 +97,8 @@ jobs:
           for dir in "${dirs[@]}"; do
             echo "::group::${dir}"
             python3 "$checker" "$dir"
+            # Reference copies under example/<id>/ (UPSTREAM.json) have no
+            # tests/ on purpose. Do not point this at MovieClaw's own tests/.
             if [ -d "${dir}/tests" ]; then
               python3 -m unittest discover -s "${dir}/tests" -t "$dir" -v
             fi

@@ -2,9 +2,21 @@
 """Choose which plugin directories a pull request must validate.
 
 Relevant changes are ``plugins/<id>/``, ``example/``, ``scripts/``,
-``index.schema.json``, and this repo's CI workflow. The example plugin is
-always included when anything relevant changed. Script or schema changes
-validate every plugin that is already in ``plugins/`` plus the example.
+``index.schema.json``, and this repo's CI workflow. ``example/hello-note``
+is always included when anything relevant changed. Script or schema changes
+also validate every plugin that is already in ``plugins/``.
+
+Reference copies listed in ``example/UPSTREAM.json`` are included too.
+``check_plugin.py`` against the MovieClaw pin in ``ci.yml`` (v0.37.0,
+``e229717c43b2d48986f8f51c19b86348a527cb5a``) accepts all eight copied from
+MovieClaw ``779712c4d8d2c2c320021ab0e31cde95821dd493``: exit code 0, warnings
+only (``watch-presence`` is inline; bundled ids warn that a package replaces
+the copy shipped with the app; ``strm-prefetch`` uses contracts it does not
+declare). Their upstream tests do not run standalone and are not in these
+directories, so the workflow's unittest step finds no ``tests/`` and skips
+it. Do not glob ``example/*`` instead of this list. If a later sync fails
+the pinned checker, stop emitting that id and say why here — leave the
+upstream source unchanged.
 
 Reads ``BASE_SHA`` and writes ``run`` and ``dirs`` to ``$GITHUB_OUTPUT``
 when that variable is set. ``dirs`` is a space-separated list.
@@ -12,13 +24,43 @@ when that variable is set. ``dirs`` is a space-separated list.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+from pluginlib import ID_RE
+
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = "example/hello-note"
+
+
+def reference_example_dirs(root: Path) -> list[str]:
+    """Plugin dirs recorded by scripts/sync_examples.py, in file order."""
+    record = root / "example" / "UPSTREAM.json"
+    if not record.is_file():
+        return []
+    try:
+        data = json.loads(record.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return []
+    items = data.get("plugins") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        return []
+    dirs: list[str] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        plugin_id = item.get("id")
+        if not isinstance(plugin_id, str) or not ID_RE.fullmatch(plugin_id):
+            continue
+        if plugin_id == "hello-note":
+            continue
+        manifest = root / "example" / plugin_id / "movieclaw-plugin.toml"
+        if manifest.is_file():
+            dirs.append(f"example/{plugin_id}")
+    return dirs
 
 
 def select(changed: list[str], root: Path = ROOT) -> tuple[bool, list[str]]:
@@ -55,6 +97,9 @@ def select(changed: list[str], root: Path = ROOT) -> tuple[bool, list[str]]:
     example = root / EXAMPLE / "movieclaw-plugin.toml"
     if example.is_file() and EXAMPLE not in dirs:
         dirs.append(EXAMPLE)
+    for ref in reference_example_dirs(root):
+        if ref not in dirs:
+            dirs.append(ref)
     return True, dirs
 
 
