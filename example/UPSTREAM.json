@@ -1,0 +1,86 @@
+{
+  "repo": "https://github.com/movieclaw/MovieClaw",
+  "commit": "779712c4d8d2c2c320021ab0e31cde95821dd493",
+  "plugins": [
+    {
+      "id": "watch-presence",
+      "title": "服务器观看动态",
+      "version": "1.0.0",
+      "runtime": "inline",
+      "upstream": "plugins/watch-presence",
+      "demo": "进程内观看动态：成员区路由和播放记录，直接用宿主内部模块",
+      "tests_included": false,
+      "tests_note": "上游目录里有 `tests/test_policy.py` 和 `tests/test_presence.py`，都不能单独跑，已省略。`test_presence.py` 要装进真实 MovieClaw 进程，用 pytest，还要数据库和登录会话。`test_policy.py` 也用 pytest；一旦导入 `watch_presence`，就会加载宿主内部的 `movieclaw_api`、`movieclaw_db`、`movieclaw_playback`、`movieclaw_kernel`。"
+    },
+    {
+      "id": "weixin-channel",
+      "title": "微信通道",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/weixin",
+      "demo": "向 im-channels 贡献微信通道（扫码绑定、iLink、入站图片）",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/channel/`（如 `test_weixin_media.py`）和 `tests/api/`，从 `movieclaw_plugins.weixin` 导入，依赖宿主夹具，不能对着 `example/weixin-channel` 单独跑，已省略。"
+    },
+    {
+      "id": "telegram-channel",
+      "title": "Telegram 通道",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/telegram",
+      "demo": "向 im-channels 贡献 Telegram bot（私聊对话和推送）",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/channel/test_im_adapters.py` 和 `test_im_inbound_images.py`，从 `movieclaw_plugins.telegram` 导入，依赖宿主，已省略。"
+    },
+    {
+      "id": "discord-channel",
+      "title": "Discord 通道",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/discord",
+      "demo": "向 im-channels 贡献 Discord bot（Gateway）",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/channel/test_im_adapters.py` 和 `test_im_inbound_images.py`，从 `movieclaw_plugins.discord` 导入，依赖宿主，已省略。"
+    },
+    {
+      "id": "feishu-channel",
+      "title": "飞书通道",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/feishu",
+      "demo": "向 im-channels 贡献飞书群机器人（只推送，不能对话）",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/channel/test_feishu.py`，从 `movieclaw_plugins.feishu` 导入，还要数据库夹具，已省略。"
+    },
+    {
+      "id": "qbittorrent-downloader",
+      "title": "qBittorrent 下载器",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/qbittorrent",
+      "demo": "向 downloader-adapters 贡献 qBittorrent",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/downloader/unit/test_qbittorrent.py` 和 `tests/downloader/test_state_normalize.py`，从 `movieclaw_plugins.qbittorrent` 导入，并依赖 `movieclaw_downloader` 和 `qbittorrentapi`，已省略。"
+    },
+    {
+      "id": "transmission-downloader",
+      "title": "Transmission 下载器",
+      "version": "1.0.0",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/transmission",
+      "demo": "向 downloader-adapters 贡献 Transmission",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/downloader/unit/test_transmission.py` 和 `tests/downloader/test_state_normalize.py`，从 `movieclaw_plugins.transmission` 导入，并依赖 `movieclaw_downloader` 和 `transmission_rpc`，已省略。"
+    },
+    {
+      "id": "strm-prefetch",
+      "title": "网盘规格预探",
+      "version": "1.0.1",
+      "runtime": "process",
+      "upstream": "src/movieclaw_plugins/strm_prefetch",
+      "demo": "用任务和敏感播放事件提前探网盘规格，探测仍走宿主操作",
+      "tests_included": false,
+      "tests_note": "插件目录里没有 `tests/`。用例在 MovieClaw 的 `tests/api/test_strm_prefetch_plugin.py`，要起真实应用并打桩探测，不能对着 `example/strm-prefetch` 单独跑，已省略。"
+    }
+  ]
+}

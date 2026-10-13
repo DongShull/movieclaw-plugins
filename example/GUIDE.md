@@ -2,7 +2,37 @@
 
 这份说明给要往本仓库加插件的人。它按 MovieClaw **v0.37.0**（提交 `e229717c43b2d48986f8f51c19b86348a527cb5a`）的真实行为写，对照的是服务器里的 `Manifest` / `check_compat`（`src/movieclaw_api/plugins/packages.py`）和内置技能 `movieclaw-plugin-dev` 的参考文档。技能文档里「用 mclaw 工具、不要改主程序源码」是给代理的流程，这里改成作者自己要做的事。
 
-同目录的 `hello-note/` 是一份能打包、能通过上述校验的最小插件：`runtime = "process"`，可靠订阅一次入库事件，用插件数据记一个键，用 pydantic 模型交出设置页能画的表单。它不在 `plugins/` 里，所以不会进索引。
+同目录的 `hello-note/` 是一份能打包、能通过上述校验的最小插件：`runtime = "process"`，可靠订阅一次入库事件，用插件数据记一个键，用 pydantic 模型交出设置页能画的表单。它不在 `plugins/` 里，所以不会进索引。写新插件时复制它。
+
+## 从 MovieClaw 复制的参考插件
+
+同目录下其余带 `movieclaw-plugin.toml` 的文件夹，是 MovieClaw 里随应用携带的插件，外加 `plugins/watch-presence`，复制过来供对照。代码保持上游原样，不在这里重构。它们不在 `plugins/`，不会进索引，也不要打 Release。权威副本在 MovieClaw 仓库，并随应用打包。
+
+<!-- sync-examples:begin -->
+当前副本的 MovieClaw 提交是 `779712c4d8d2c2c320021ab0e31cde95821dd493`。机器可读的记录在 [`UPSTREAM.json`](UPSTREAM.json)。
+权威源码在 [MovieClaw](https://github.com/movieclaw/MovieClaw)，并随应用打包。不要改这里的副本来发版。要更新：
+
+```bash
+python3 scripts/sync_examples.py 779712c4d8d2c2c320021ab0e31cde95821dd493
+```
+
+| 目录 | 上游路径 | runtime | 示范 |
+|---|---|---|---|
+| [`watch-presence`](watch-presence/) | `plugins/watch-presence` | `inline` | 进程内观看动态：成员区路由和播放记录，直接用宿主内部模块 |
+| [`weixin-channel`](weixin-channel/) | `src/movieclaw_plugins/weixin` | `process` | 向 im-channels 贡献微信通道（扫码绑定、iLink、入站图片） |
+| [`telegram-channel`](telegram-channel/) | `src/movieclaw_plugins/telegram` | `process` | 向 im-channels 贡献 Telegram bot（私聊对话和推送） |
+| [`discord-channel`](discord-channel/) | `src/movieclaw_plugins/discord` | `process` | 向 im-channels 贡献 Discord bot（Gateway） |
+| [`feishu-channel`](feishu-channel/) | `src/movieclaw_plugins/feishu` | `process` | 向 im-channels 贡献飞书群机器人（只推送，不能对话） |
+| [`qbittorrent-downloader`](qbittorrent-downloader/) | `src/movieclaw_plugins/qbittorrent` | `process` | 向 downloader-adapters 贡献 qBittorrent |
+| [`transmission-downloader`](transmission-downloader/) | `src/movieclaw_plugins/transmission` | `process` | 向 downloader-adapters 贡献 Transmission |
+| [`strm-prefetch`](strm-prefetch/) | `src/movieclaw_plugins/strm_prefetch` | `process` | 用任务和敏感播放事件提前探网盘规格，探测仍走宿主操作 |
+
+`watch-presence` 是 `runtime = inline`，import 宿主内部的 `movieclaw_api`、`movieclaw_db`、`movieclaw_playback`、`movieclaw_kernel`，不是只依赖 SDK。下载器依赖宿主提供的 `qbittorrent-api` / `transmission-rpc`，不放进 `vendor/`。
+
+这些目录里的测试不能脱离 MovieClaw 单独跑，同步时不复制。各目录的 `README.md` 写了上游路径、提交号和省略原因。
+<!-- sync-examples:end -->
+
+CI 会把上表里的目录和 `hello-note/` 一起交给钉死版本的 `check_plugin.py`。警告（inline、与随应用携带的插件同 id、清单里没写全的契约）不导致失败。这些目录没有 `tests/`，不会跑 unittest。
 
 ## 设计文档里已经过时的部分
 

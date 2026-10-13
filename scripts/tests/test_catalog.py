@@ -166,13 +166,44 @@ class CiDirsTest(unittest.TestCase):
 
     def test_example_change_validates_the_example(self) -> None:
         run, dirs = select(["example/GUIDE.md"])
+        record = json.loads((ROOT / "example" / "UPSTREAM.json").read_text(encoding="utf-8"))
+        expected = ["example/hello-note"] + [f"example/{item['id']}" for item in record["plugins"]]
         self.assertTrue(run)
-        self.assertEqual(dirs, ["example/hello-note"])
+        self.assertEqual(dirs, expected)
 
     def test_script_change_includes_example(self) -> None:
         run, dirs = select(["scripts/pack.py"])
         self.assertTrue(run)
         self.assertIn("example/hello-note", dirs)
+        self.assertIn("example/watch-presence", dirs)
+        self.assertIn("example/strm-prefetch", dirs)
+
+    def test_reference_examples_follow_upstream_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            example = root / "example"
+            (example / "hello-note").mkdir(parents=True)
+            (example / "hello-note" / "movieclaw-plugin.toml").write_text("x", encoding="utf-8")
+            (example / "weixin-channel").mkdir()
+            (example / "weixin-channel" / "movieclaw-plugin.toml").write_text("x", encoding="utf-8")
+            (example / "skip-me").mkdir()
+            (example / "skip-me" / "movieclaw-plugin.toml").write_text("x", encoding="utf-8")
+            (example / "UPSTREAM.json").write_text(
+                json.dumps(
+                    {
+                        "plugins": [
+                            {"id": "weixin-channel"},
+                            {"id": "missing"},
+                            {"id": "../nope"},
+                            {"id": "hello-note"},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            run, dirs = select(["example/GUIDE.md"], root)
+            self.assertTrue(run)
+            self.assertEqual(dirs, ["example/hello-note", "example/weixin-channel"])
 
 
 if __name__ == "__main__":
