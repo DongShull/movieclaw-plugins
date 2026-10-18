@@ -20,6 +20,10 @@ concurrency:
 env:
   # MovieClaw v0.37.0. The same pin as ci.yml.
   MOVIECLAW_REF: e229717c43b2d48986f8f51c19b86348a527cb5a
+  # Plugins with a [dependencies] lock file (and newer contracts such as
+  # drive-backends) are validated against this main commit, the same pin
+  # as ci.yml. Fold into MOVIECLAW_REF once a release ships both.
+  MOVIECLAW_DEPS_REF: 6251128f0aef40ecfc75fede8a75579bf51d66f3
   CATALOG_TAG: catalog
 
 jobs:
@@ -40,11 +44,23 @@ jobs:
         id: tag
         run: python3 scripts/check_tag.py
 
+      - name: Pick the MovieClaw ref
+        id: ref
+        env:
+          PLUGIN_ID: ${{ steps.tag.outputs.id }}
+        run: |
+          set -euo pipefail
+          if grep -q '^\[dependencies\]' "plugins/${PLUGIN_ID}/movieclaw-plugin.toml"; then
+            echo "ref=${MOVIECLAW_DEPS_REF}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${MOVIECLAW_REF}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout MovieClaw
         uses: actions/checkout@v4
         with:
           repository: movieclaw/MovieClaw
-          ref: ${{ env.MOVIECLAW_REF }}
+          ref: ${{ steps.ref.outputs.ref }}
           path: .movieclaw
 
       - uses: actions/setup-python@v5
