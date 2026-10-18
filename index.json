@@ -1,7 +1,51 @@
 {
   "schema": 1,
-  "generated_at": "2026-10-13T00:00:00Z",
+  "generated_at": "2026-10-18T03:27:04Z",
   "signed": false,
   "key_id": null,
-  "plugins": []
+  "plugins": [
+    {
+      "id": "cloud-115",
+      "name": "115 网盘",
+      "description": "把 115 网盘接进媒体库：扫码或浏览器 Cookie 登录，纳管已有文件夹、秒传与分片续传上传、取直链播放",
+      "author": "MovieClaw",
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/cloud-115",
+      "license": "GPL-3.0-or-later",
+      "origin": "official",
+      "icon": null,
+      "screenshots": [],
+      "runtime": "process",
+      "sdk": "^1.0",
+      "app": null,
+      "permissions": {
+        "operations": [],
+        "paths": [],
+        "network": false,
+        "callbacks": [],
+        "events": []
+      },
+      "platforms": [
+        "any"
+      ],
+      "latest": "0.1.0-beta.1",
+      "versions": [
+        {
+          "version": "0.1.0-beta.1",
+          "released_at": "2026-10-18T03:27:04Z",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/cloud-115-v0.1.0-beta.1",
+          "min_app": null,
+          "max_app": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "cloud-115-0.1.0-beta.1.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/cloud-115-v0.1.0-beta.1/cloud-115-0.1.0-beta.1.mcplugin",
+              "sha256": "88958b608374e8481f389bb11d113419db7e42588d81958d8cfead10e9eda5bb",
+              "size": 45196
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
