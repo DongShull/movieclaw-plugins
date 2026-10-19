@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated_at": "2026-10-18T03:27:04Z",
+  "generated_at": "2026-10-19T10:30:37Z",
   "signed": false,
   "key_id": null,
   "plugins": [
@@ -27,8 +27,24 @@
       "platforms": [
         "any"
       ],
-      "latest": "0.1.0-beta.1",
+      "latest": "0.1.0-beta.2",
       "versions": [
+        {
+          "version": "0.1.0-beta.2",
+          "released_at": "2026-10-19T10:30:37Z",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/cloud-115-v0.1.0-beta.2",
+          "min_app": null,
+          "max_app": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "cloud-115-0.1.0-beta.2.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/cloud-115-v0.1.0-beta.2/cloud-115-0.1.0-beta.2.mcplugin",
+              "sha256": "3f2f6f4d863ee2d049a0faa6577c86bc4fe5a466cc65f91c09e925f4dfb6cf13",
+              "size": 46375
+            }
+          ]
+        },
         {
           "version": "0.1.0-beta.1",
           "released_at": "2026-10-18T03:27:04Z",
