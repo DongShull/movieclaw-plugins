@@ -20,7 +20,7 @@
       "permissions": {
         "operations": [],
         "paths": [],
-        "network": false,
+        "network": true,
         "callbacks": [],
         "events": []
       },
