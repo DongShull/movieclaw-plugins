@@ -397,7 +397,7 @@ python3 -m unittest discover -s example/hello-note/tests -t example/hello-note -
 python3 scripts/pack.py example/hello-note --output /tmp/hello-note-0.1.0.mcplugin
 ```
 
-本仓库 CI 对 PR 做的就是前两步，MovieClaw 钉在 v0.40.0。
+本仓库 CI 对 PR 做的就是前两步，MovieClaw 钉在 v0.42.0。
 
 ## 装不上时
 
