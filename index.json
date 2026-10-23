@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T03:33:08Z",
+  "generated_at": "2026-10-23T03:34:02Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -232,6 +232,83 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/cloud-115-v0.1.0-beta.1/cloud-115-0.1.0-beta.1.mcplugin",
               "sha256": "88958b608374e8481f389bb11d113419db7e42588d81958d8cfead10e9eda5bb",
               "size": 45196
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "movie-voice",
+      "name": "寻映",
+      "summary": "Siri 语音找电影和剧集，纠正片名、核对库存，确认后观看或订阅。",
+      "description": "寻映配合「找电影」快捷指令使用，插件页面生成并复制 SEARCH_URL；Siri 找电影：海报、片名和年份确认；已有影片发送可打开官方 App 影片详情的原生通知，缺片由用户确认后沿用默认规则订阅。网页使用当前登录账号；通知仅发给管理员账号。",
+      "category": "tools",
+      "author": {
+        "name": "sexyfeifan",
+        "url": "https://github.com/sexyfeifan"
+      },
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/movie-voice",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/movie-voice",
+      "license": "见仓库许可证",
+      "origin": "official",
+      "icon": {
+        "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/catalog/movie-voice-icon-05473f3799072024.svg",
+        "sha256": "05473f37990720240062f2ce93645756704c7980c3204634f58319af5cca33e9",
+        "size": 354
+      },
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "0.1.0",
+      "latest_stable": "0.1.0",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "prerelease": false,
+          "released_at": "2026-10-23T03:34:02Z",
+          "yanked": null,
+          "notes": "- 插件展示名为“寻映”；配套快捷指令仍为“找电影”，内部标识保留 `movie-voice`。\n\n- 通过 Apple 快捷指令语音或输入搜索电影与电视剧，显示海报、片名和年份候选。\n- 支持片名纠错、同音、库存别名匹配，以及重说、手动输入和补充线索。\n- 确认影片后核对库存：已有影片发送官方 App 观看通知，缺片按宿主默认规则订阅并搜索下载。\n- 插件页面生成并复制 SEARCH_URL，直接下载不带服务器信息的通用分享版；下载按钮旁提供已验证的 iCloud 一键添加入口，保留文件下载备用。\n- 可私密分发管理员在 Mac 预先签名的已配置个人版；地址或授权变化后停止分发旧文件。\n- 网页沿用 MovieClaw 当前服务端的黑白灰、小圆角和按钮样式，适配手机。\n- 将可审阅的快捷指令源码、分享版构建和个人版签名维护工具一并随源码发布，无需作者本机配置。\n- 能力链接响应禁止缓存，撤销授权接口拒绝跨站请求。\n- 修复类别过滤导致的漏搜：网页与快捷指令同时展示电影、电视剧及库内命中，按类型与来源编号核对和观看；剧集缺片订阅要求明确季数后再确认，不默认全季或自动续订。\n- 同步用户在 Mac 设置的两版青色图标：个人版波形、分享版慢动作；更新签名下载文件及未配置 iCloud 副本，流程动作保持不变。\n- 完成 Mac 原生在库剧集识别与中文季号确认验收，测试均取消最终操作；说明插件内下载入口、个人版签名准备及系统确认添加的步骤。\n\n个人版不是 Linux 服务端即时签名：每台服务器需先由自己的 Mac 准备一次。需要宿主已有的元数据来源、订阅线路和下载器配置；资源是否命中仍由宿主规则决定。\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/movie-voice-v0.1.0",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/movie-voice-v0.1.0/plugins/movie-voice",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/movie-voice-v0.1.0/plugins/movie-voice/README.md",
+            "sha256": "d8ece9baec0cad8ae9f73707749ed93d15a26e574d3ecda5721839fcb5141fc3",
+            "size": 8890
+          },
+          "runtime": "process",
+          "sdk": "^1.0",
+          "requires": {
+            "agent": "^1.0",
+            "host-ops": "^1.0",
+            "plugin-routes": "^1.0",
+            "plugin-events": "^1.0",
+            "plugin-data": "^1.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "agent:none",
+              "library.items.get",
+              "search.library",
+              "search.titles",
+              "discover.get-title-details",
+              "subscriptions.create"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [],
+            "events": []
+          },
+          "web": true,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "movie-voice-0.1.0.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/movie-voice-v0.1.0/movie-voice-0.1.0.mcplugin",
+              "sha256": "b11f38567716a038339fab820f24070a97b772d3487554de304302fd3f042ad9",
+              "size": 75395
             }
           ]
         }
