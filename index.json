@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T03:34:02Z",
+  "generated_at": "2026-10-23T03:34:59Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -442,6 +442,88 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/platform-discovery-v0.11.0/platform-discovery-0.11.0.mcplugin",
               "sha256": "888f754774dd23fd6106a02ee95cf477a0f34d2ce8fe9a0589bf509937b5b37f",
               "size": 353091
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seed-scheduler",
+      "name": "种子做种定时清理",
+      "summary": "给下载器里的种子设做种时长，到点自动删任务；H&R 与订阅中的先留着。",
+      "description": "给下载器里的种子设做种时长：到点自动删任务（可连数据文件一起删），不依赖 MovieClaw 入库——只把它当下载器用也行。站点 H&R 要求、还在下载中、正在播放、订阅正在用的种子会先留着；被挡住的会提醒你处理。",
+      "category": "downloader",
+      "author": {
+        "name": "Kev1nT",
+        "url": "https://github.com/Kev1nT"
+      },
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/seed-scheduler",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/seed-scheduler",
+      "license": "MIT",
+      "origin": "official",
+      "icon": null,
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "1.1.0",
+      "latest_stable": "1.1.0",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "prerelease": false,
+          "released_at": "2026-10-23T03:34:59Z",
+          "yanked": null,
+          "notes": "审阅意见落地：文档里写的几条安全线原本大多没有真正生效，这版让它们真的起作用。\n\n安全线\n\n- 媒体库保护真正生效。原来靠 `brief[\"file_ids\"]` 找库文件，可直连 qBittorrent 的结果和宿主\n  `dl.tasks` 里都没有这个字段，判断永远拿到空集、也就永远放行。现在监听\n  `library.ingest.completed`（自带 `info_hashes` 与 `files`）自己建入库台账：\n  - 「还供着别的条目 / 没识别的文件」按台账里各文件的 `media_item_id` 判断；\n  - 「订阅还在等这些季集」再问一次 `library.items.relations`；\n  - 台账按入库时间留最近 400 条，控制在 `PLUGIN_DATA` 单值 64 KB 以内。\n- 去掉缺必填参数 `library_id` 的 `library.items.list` 调用（它也不在申请的权限里）。\n  条目详情只用来给通知卡片取标题与海报，取不到就当没有，不参与任何删除判断。\n- H&R 改从下载器标签识别（`hit&run` / `H&R` / `考核` 等）。原来读 `dl.tasks` 的\n  `subscriptions[]`，那里没有这个字段，恒为 False。\n- `removal_blocker` 真的和 `hr_min_hours` 比较了：做够考核时长就不再拦，没做够才拦。\n- 做种时长不再把 `added_on` 算进去。已完成的种子只认累计做种秒数与完成时刻，\n  `added_on` 只在两者都缺失时兜底——否则「下了三天才下完、刚做种就被判成做了三天」。\n- 「正在播放」按片长推进保护窗口，兜底 4 小时（原来固定 30 分钟，两小时的片看到后半段\n  就出了窗口）。\n\n默认值与容量\n\n- `dry_run` 默认改为开、`delete_files` 默认改为关、`handle_missing_files` 默认改为关。\n  删除不可逆，先演练几轮再放开。\n- 每轮删除上限 `MAX_PER_RUN` 由 200 降到 20，避免一次改动在几秒内删光上千个任务。\n- `seen` 上限 1000 条、`history` 50 条。原来 20000 / 300 条会超过 64 KB 上限，\n  写不进去之后所有种子被当成「刚见到」重新计时。\n- 处理记录改到删种与发通知之后再写，不会再出现「删了、没通知、状态没落盘」。\n\n多下载器\n\n- 设置的 qBittorrent 地址不再套在 `dl.list` 的每一台下载器上：按主机名 + 端口比对，\n  对不上就退回任务中心的口径。直连拿到的种子带上 `downloader_id`，删除时用同一个 id。\n\n其它\n\n- `should_remind` 的单位修正：`overdue_days` 是天，原来当小时算，兜底时间只有设定值的 1/24。\n- 提醒不再要求「只清理媒体库里已有这份文件的种子」也打开；只要到期被挡住就提醒。\n- 清单补上 `network = true`（直连 qBittorrent WebAPI），去掉没用到的 `library.scan.start`。\n- 不再导入 `movieclaw_sdk.events._base.Frozen`，改用 `BaseModel + ConfigDict(frozen=True)`。\n- 补纯函数单测：`removal_blocker`、`library_verdict`、`should_remind`、`has_hr_tag`、\n  `open_until`、台账与 URL 归一化。\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/seed-scheduler-v1.1.0",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/seed-scheduler-v1.1.0/plugins/seed-scheduler",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/seed-scheduler-v1.1.0/plugins/seed-scheduler/README.md",
+            "sha256": "8dc087b4247e8838f9e9682fe512fa02cf171cce586127384db552c069440d2f",
+            "size": 6121
+          },
+          "runtime": "process",
+          "sdk": "^1.0",
+          "requires": {
+            "host-ops": "^1.0",
+            "plugin-data": "^1.0",
+            "plugin-events": "^1.0",
+            "job-handlers": "^1.1",
+            "plugin-jobs": "^1.0",
+            "scheduled-tasks": "^1.0",
+            "download.completed": "^2.0",
+            "library.ingest.completed": "^1.0",
+            "library.item.viewed": "^2.0",
+            "playback.started": "^2.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "dl.list",
+              "dl.tasks",
+              "dl.file-sources.list",
+              "library.list",
+              "library.items.get",
+              "library.items.relations",
+              "dl.torrent.delete"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [],
+            "events": [
+              "playback.*",
+              "library.item.viewed"
+            ]
+          },
+          "web": false,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "seed-scheduler-1.1.0.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/seed-scheduler-v1.1.0/seed-scheduler-1.1.0.mcplugin",
+              "sha256": "134a4587d1d6a291ae776575462961cc4ec8e87a270004542076f74e5c0a4437",
+              "size": 36357
             }
           ]
         }
