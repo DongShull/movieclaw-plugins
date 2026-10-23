@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T03:32:01Z",
+  "generated_at": "2026-10-23T03:33:08Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -443,6 +443,78 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/trakt-sync-v0.2.3/trakt-sync-0.2.3.mcplugin",
               "sha256": "90db9b49b7eb245140937fa7063ca9a0052908fdbbd323763d9be8651eee47ab",
               "size": 68808
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "watch-friends",
+      "name": "映迹",
+      "summary": "私人观影足迹、高清片单、多图推荐、本人跨平台已看与续播同步，以及独立授权的互联影友。",
+      "description": "观看足迹、私人片单、影视推荐、已看与续播同步、互联影友。",
+      "category": "tools",
+      "author": {
+        "name": "sexyfeifan",
+        "url": null
+      },
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/watch-friends",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/watch-friends",
+      "license": "GPL-3.0-only",
+      "origin": "official",
+      "icon": {
+        "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/catalog/watch-friends-icon-b21a535dccc013d7.svg",
+        "sha256": "b21a535dccc013d7822b4981a7d884532af98233ea4e8712b202219c57da0e97",
+        "size": 290
+      },
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "0.1.0",
+      "latest_stable": "0.1.0",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "prerelease": false,
+          "released_at": "2026-10-23T03:33:08Z",
+          "yanked": null,
+          "notes": "首次提交到 MovieClaw 插件仓库，安装 ID 为 `watch-friends`，显示名称为「映迹」。\n\n- 原生 Web 页面、服务器账号头像与个人资料、跨来源观看足迹和电影／电视剧／单集统计。\n- 私人片单与喜欢列表；高清可选片单封面，最多九张图片的推荐、评分、点赞、评论及举报。\n- 按媒体库排除公开内容，可分别隐藏私人足迹和排除统计；公开预览与好友授权独立。\n- 本人 Emby/Plex 导入，三平台已看对齐预览后确认同步；默认关闭的后台已看和续播同步，支持任务进度、暂停、停止与重试。\n- 管理员双向批准的互联服务器、来源签名与短期名片、最多两次可信转发；独立默认关闭的可选公共发现，不内置公共入口。\n- 统一宿主主题、图标、弹窗、折叠同步卡片和图片预览。插件只保存自己的数据，无需附加容器或端口。\n\n跨服务器互联网联调尚待第二台真实服务器；本地多实例验证不等同于真实多服验收。续播为轮询式同步，不保证所有客户端即时无缝衔接。\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/watch-friends-v0.1.0",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/watch-friends-v0.1.0/plugins/watch-friends",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/watch-friends-v0.1.0/plugins/watch-friends/README.md",
+            "sha256": "bda46bde0904c8d61002ccf26187e4dd64266f70afdea031f082ea80390407ce",
+            "size": 42298
+          },
+          "runtime": "inline",
+          "sdk": "^1.0",
+          "requires": {
+            "host-ops": "^1.0",
+            "plugin-routes": "^1.0",
+            "plugin-files": "^1.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "members.list",
+              "playback.history",
+              "search.library"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [],
+            "events": []
+          },
+          "web": true,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "watch-friends-0.1.0.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/watch-friends-v0.1.0/watch-friends-0.1.0.mcplugin",
+              "sha256": "7e1af31455f37b65bbb2216ad83e5e41a3bd9c3736b503363ee294eaa7fb69dd",
+              "size": 702339
             }
           ]
         }
