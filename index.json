@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T02:32:16Z",
+  "generated_at": "2026-10-23T03:32:01Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -294,6 +294,77 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/openlist-direct-link-v0.1.0/openlist-direct-link-0.1.0.mcplugin",
               "sha256": "6ae34a4645581a82f87689f35dc02d007fb930b592ed7f540e3d6ec66cf1f7ea",
               "size": 6752
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform-discovery",
+      "name": "映屿",
+      "summary": "按账号同步片味的海报墙、媒体库录像厅和平台发现；支持库存播放入口、选季订阅、完整全屏屏保与有限海报缓存。",
+      "description": "按 MovieClaw 账号同步口味测试、稍后看、不感兴趣、已看过、喜欢与避重历史；官方进程内插件模式，自动合并旧浏览器档案。国家／年代／题材多选、筛选方案、探索程度、安全撤销与浏览历史均按账号同步。海报墙支持尺寸自适应、首屏优先与有限预加载，以及悬停快捷标记与手机操作入口，默认首页，全屏无缝拼贴、重测片味、跨重启恢复。详情内直接订阅：剧集可选季，明确确认后由当前登录账号创建，沿用现有订阅策略与入库路由。保留 Netflix 官网周榜和自动更新、平台热榜、随心看剧。入口 /api/v1/plugins/platform-discovery/panel。",
+      "category": "tools",
+      "author": {
+        "name": "sexyfeifan",
+        "url": null
+      },
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/platform-discovery",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/platform-discovery",
+      "license": "GPL-3.0-only",
+      "origin": "official",
+      "icon": {
+        "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/catalog/platform-discovery-icon-526beedfa9b38991.svg",
+        "sha256": "526beedfa9b38991f0216cd54fe6b8ea2f64b8ee3f0805644d9964df1ebae530",
+        "size": 258
+      },
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "0.11.0",
+      "latest_stable": "0.11.0",
+      "versions": [
+        {
+          "version": "0.11.0",
+          "prerelease": false,
+          "released_at": "2026-10-23T03:32:01Z",
+          "yanked": null,
+          "notes": "平台放映厅更名为映屿：主程序只声明一个映屿入口，四个板块统一在插件页面内切换，桌面恢复完整页内导航、手机保留紧凑切换条。内部 ID、路由、账号偏好与缓存目录不变，兼容原有板块收藏链接。\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/platform-discovery-v0.11.0",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/platform-discovery-v0.11.0/plugins/platform-discovery",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/platform-discovery-v0.11.0/plugins/platform-discovery/README.md",
+            "sha256": "aa7ef20a7e14135f18dd11d5fd6dcc4b3164518d4af23001f7a8b2f9fbd53206",
+            "size": 12464
+          },
+          "runtime": "inline",
+          "sdk": "^1.0",
+          "requires": {
+            "host-ops": "^1.0",
+            "plugin-routes": "^1.0",
+            "plugin-data": "^1.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "discover.get-title-details",
+              "discover.filter-titles"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [],
+            "events": []
+          },
+          "web": true,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "platform-discovery-0.11.0.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/platform-discovery-v0.11.0/platform-discovery-0.11.0.mcplugin",
+              "sha256": "888f754774dd23fd6106a02ee95cf477a0f34d2ce8fe9a0589bf509937b5b37f",
+              "size": 353091
             }
           ]
         }
