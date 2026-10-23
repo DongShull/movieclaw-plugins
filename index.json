@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-22T04:09:54Z",
+  "generated_at": "2026-10-23T02:32:16Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -294,6 +294,84 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/openlist-direct-link-v0.1.0/openlist-direct-link-0.1.0.mcplugin",
               "sha256": "6ae34a4645581a82f87689f35dc02d007fb930b592ed7f540e3d6ec66cf1f7ea",
               "size": 6752
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trakt-sync",
+      "name": "Trakt 自动追踪",
+      "summary": "将 MovieClaw 播放活动同步到各成员自己的 Trakt 账号",
+      "description": "将 MovieClaw 播放活动自动同步到各成员绑定的 Trakt 账号",
+      "category": "tools",
+      "author": {
+        "name": "o1xhack",
+        "url": "https://github.com/o1xhack"
+      },
+      "homepage": "https://github.com/o1xhack/movieclaw-trakt",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/trakt-sync",
+      "license": "MIT",
+      "origin": "official",
+      "icon": null,
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "0.2.3",
+      "latest_stable": "0.2.3",
+      "versions": [
+        {
+          "version": "0.2.3",
+          "prerelease": false,
+          "released_at": "2026-10-23T02:32:16Z",
+          "yanked": null,
+          "notes": "- Prevent a completion evicted by capacity trimming after metadata revalidation from being sent without a persisted recovery record.\n- Remove delivered or failed jobs by identity, so capacity trimming cannot silently discard the following completion or pop an empty queue.\n- Add regressions for near-limit two-job and single-job queues, plus remote-success/process-exit recovery while capacity trimming removes a heartbeat. Capacity evictions retain the existing explicit loss count.\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/trakt-sync-v0.2.3",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/trakt-sync-v0.2.3/plugins/trakt-sync",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/trakt-sync-v0.2.3/plugins/trakt-sync/README.md",
+            "sha256": "71140d2337b7bd3bc8094de83b72e969d41211836480ca95189a6037e7c044e1",
+            "size": 5185
+          },
+          "runtime": "process",
+          "sdk": "^1.0",
+          "requires": {
+            "playback.started": "^2.0",
+            "playback.progress": "^1.0",
+            "playback.stopped": "^1.0",
+            "playback.completed": "^1.0",
+            "host-ops": "^1.0",
+            "plugin-data": "^1.0",
+            "plugin-routes": "^1.0",
+            "plugin-health": "^1.0",
+            "kernel/durable-events": "^1.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "library.list",
+              "library.items.get"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [],
+            "events": [
+              "playback.started",
+              "playback.progress",
+              "playback.stopped",
+              "playback.completed"
+            ]
+          },
+          "web": true,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "trakt-sync-0.2.3.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/trakt-sync-v0.2.3/trakt-sync-0.2.3.mcplugin",
+              "sha256": "90db9b49b7eb245140937fa7063ca9a0052908fdbbd323763d9be8651eee47ab",
+              "size": 68808
             }
           ]
         }
