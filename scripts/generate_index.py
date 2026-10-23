@@ -7,12 +7,18 @@ Where each field comes from:
   directory **at that version's tag** (``git show <id>-v<version>:plugins/<id>/…``).
   Old versions keep what they asked for even after the manifest on main changed.
   Without the tag (shallow clone) the version is copied from ``--previous``.
-- Per plugin (summary, category, author, icon, yanked, deprecated): ``store.json`` in
-  the working tree, so a metadata fix does not need a new release. Name and
-  description come from the newest version.
+- Per plugin (summary, category, author, icon, yanked, deprecated, feedback): ``store.json``
+  in the working tree, so a metadata fix does not need a new release. Name and
+  description come from the newest version. ``feedback_url`` is ``issues_url``, or
+  ``homepage`` when that is another GitHub repository, otherwise the catalog issue form
+  prefilled with the plugin id and no version parameters.
 - Download fields (url, sha256, size, released_at): ``--previous`` (any schema)
   overlaid with ``--release`` / ``--releases``. A tag without such a record was never
   published and is left out.
+- ``downloads``: ``--fetch-downloads`` sums GitHub Release ``download_count`` of each
+  published version's ``.mcplugin`` assets. Without the flag, a non-negative integer
+  already on ``--previous`` is kept; otherwise the field is omitted. ``--check`` and
+  ``--update`` never call the API.
 
     python3 scripts/generate_index.py --update                    # refresh index.json in place
     python3 scripts/generate_index.py --check index.json          # schema + reproducible
@@ -32,11 +38,15 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
 from pluginlib import (
     CHANGELOG,
+    GITHUB_REPO_URL_RE,
     ICON_MAX_BYTES,
     IMAGE_TYPES,
     MANIFEST,
@@ -56,6 +66,7 @@ from pluginlib import (
     permissions_from,
     plugin_table,
     requires_of,
+    split_tag,
     table_of,
     version_sort_key,
 )
@@ -64,6 +75,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "index.schema.json"
 SCHEMA = 2
 GENERATED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+# Field ids in this file are the query parameters MovieClaw prefills.
+FEEDBACK_TEMPLATE = "plugin-feedback.yml"
+_GITHUB_API = "https://api.github.com/"
+_MAX_RELEASE_PAGES = 20
 
 
 def _dumps(document: dict) -> str:
@@ -114,6 +129,163 @@ def _asset(url: str, data: bytes) -> dict:
 
 def _raw_url(repo: str, ref: str, path: str) -> str:
     return f"https://raw.githubusercontent.com/{repo}/{ref}/{path}"
+
+
+def catalog_feedback_url(repo: str, plugin_id: str) -> str:
+    """Issue form for this catalog, plugin id filled in, versions left to the app."""
+    query = urlencode((("template", FEEDBACK_TEMPLATE), ("plugin", plugin_id)))
+    return f"https://github.com/{repo}/issues/new?{query}"
+
+
+def feedback_url_for(repo: str, plugin_id: str, store: dict) -> str:
+    """Author's issues URL, or the catalog form.
+
+    ``issues_url`` wins. A homepage that is some other GitHub repository root becomes
+    that repository's ``issues/new``. A path inside this catalog (the default tree URL)
+    stays on the prefilled form.
+    """
+    issues = store.get("issues_url")
+    if isinstance(issues, str) and issues:
+        return issues
+    homepage = store.get("homepage")
+    if isinstance(homepage, str):
+        match = GITHUB_REPO_URL_RE.fullmatch(homepage)
+        if match is not None:
+            owner, name = match.group(1), match.group(2)
+            if f"{owner}/{name}" != repo:
+                return f"https://github.com/{owner}/{name}/issues/new"
+    return catalog_feedback_url(repo, plugin_id)
+
+
+def _nonnegative(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def mcplugin_download_counts(releases: list[dict]) -> dict[str, dict[str, int]]:
+    """``plugin id → version →`` sum of ``.mcplugin`` asset ``download_count``.
+
+    Drafts and tags that are not ``<id>-v<version>`` (including the catalog release)
+    are ignored. Checksum sidecars are not ``.mcplugin`` files, so they are not counted.
+    """
+    counts: dict[str, dict[str, int]] = {}
+    for release in releases:
+        if not isinstance(release, dict) or release.get("draft") is True:
+            continue
+        tag = release.get("tag_name")
+        if not isinstance(tag, str):
+            continue
+        try:
+            plugin_id, version = split_tag(tag)
+        except PluginError:
+            continue
+        assets = release.get("assets") or []
+        if not isinstance(assets, list):
+            continue
+        total = 0
+        for asset in assets:
+            if not isinstance(asset, dict):
+                continue
+            name = asset.get("name")
+            if not isinstance(name, str) or not name.endswith(".mcplugin"):
+                continue
+            count = asset.get("download_count", 0)
+            if not _nonnegative(count):
+                raise PluginError(f"{tag} 的附件 {name} 下载次数不是非负整数")
+            total += count
+        bucket = counts.setdefault(plugin_id, {})
+        bucket[version] = bucket.get(version, 0) + total
+    return counts
+
+
+def _next_link(header: str | None) -> str | None:
+    if not header:
+        return None
+    for part in header.split(","):
+        bits = [bit.strip() for bit in part.split(";")]
+        if not bits or not bits[0].startswith("<") or not bits[0].endswith(">"):
+            continue
+        if any(bit in {'rel="next"', "rel=next"} for bit in bits[1:]):
+            return bits[0][1:-1]
+    return None
+
+
+def _github_get_json(url: str, token: str | None) -> tuple[object, str | None]:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "movieclaw-plugins-catalog",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            raw = response.read()
+            link = response.headers.get("Link")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read(400).decode("utf-8", "replace").replace("\n", " ").strip()
+        raise PluginError(f"读取 GitHub Release 失败：HTTP {exc.code} {detail[:180]}") from exc
+    except urllib.error.URLError as exc:
+        raise PluginError(f"读取 GitHub Release 失败：{exc.reason}") from exc
+    try:
+        return json.loads(raw.decode("utf-8")), link
+    except (UnicodeError, ValueError) as exc:
+        raise PluginError("GitHub Release 列表不是 JSON") from exc
+
+
+def fetch_download_counts(
+    repo: str,
+    *,
+    token: str | None = None,
+    get=None,
+) -> dict[str, dict[str, int]]:
+    """Read-only: list the repository's releases and sum ``.mcplugin`` downloads."""
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo):
+        raise PluginError(f"仓库名 {repo!r} 不合法")
+    if get is None:
+        get = _github_get_json
+    url = f"{_GITHUB_API}repos/{repo}/releases?per_page=100"
+    releases: list[dict] = []
+    seen: set[str] = set()
+    for _ in range(_MAX_RELEASE_PAGES):
+        if url in seen:
+            raise PluginError("GitHub Release 分页出现了循环")
+        if not url.startswith(_GITHUB_API):
+            raise PluginError("GitHub 分页链接指向了别的站点，已停止")
+        seen.add(url)
+        payload, link = get(url, token)
+        if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
+            raise PluginError(f"GitHub Release 列表不是数组：{repo}")
+        releases.extend(payload)
+        nxt = _next_link(link)
+        if nxt is None:
+            return mcplugin_download_counts(releases)
+        url = nxt
+    raise PluginError("GitHub Release 列表过长，已停止")
+
+
+def _download_total(
+    plugin_id: str,
+    versions: list[str],
+    download_counts: dict[str, dict[str, int]] | None,
+    previous_plugin: dict | None,
+) -> int | None:
+    """Sum for the versions actually in the index. None leaves the field off."""
+    if download_counts is not None:
+        per_version = download_counts.get(plugin_id) or {}
+        total = 0
+        for version in versions:
+            count = per_version.get(version, 0)
+            if not _nonnegative(count):
+                raise PluginError(f"{plugin_id} {version} 的下载次数须是非负整数")
+            total += count
+        return total
+    if previous_plugin is None or "downloads" not in previous_plugin:
+        return None
+    value = previous_plugin.get("downloads")
+    if not _nonnegative(value):
+        raise PluginError(f"{plugin_id} 的 downloads 须是非负整数")
+    return value
 
 
 def _platforms(table: dict) -> list[str]:
@@ -294,6 +466,7 @@ def _plugin_document(
     previous_plugin: dict | None,
     records: list[dict],
     assets: dict[str, bytes],
+    download_counts: dict[str, dict[str, int]] | None = None,
 ) -> dict | None:
     table = plugin_table(directory)
     plugin_id = table["id"]
@@ -361,7 +534,13 @@ def _plugin_document(
         assets[name] = data
         screenshots.append(shot)
     tree = f"https://github.com/{repo}/tree/main/plugins/{plugin_id}"
-    return {
+    downloads = _download_total(
+        plugin_id,
+        [item["version"] for item in versions],
+        download_counts,
+        previous_plugin,
+    )
+    document = {
         "id": plugin_id,
         "name": newest["name"],
         "summary": store["summary"],
@@ -375,10 +554,14 @@ def _plugin_document(
         "icon": icon,
         "screenshots": screenshots,
         "deprecated": store["deprecated"],
-        "latest": usable[0]["version"] if usable else None,
-        "latest_stable": stable[0]["version"] if stable else None,
-        "versions": versions,
+        "feedback_url": feedback_url_for(repo, plugin_id, store),
     }
+    if downloads is not None:
+        document["downloads"] = downloads
+    document["latest"] = usable[0]["version"] if usable else None
+    document["latest_stable"] = stable[0]["version"] if stable else None
+    document["versions"] = versions
+    return document
 
 
 def build_index(
@@ -392,6 +575,7 @@ def build_index(
     key_id: str | None,
     git_root: Path | None = None,
     assets: dict[str, bytes] | None = None,
+    download_counts: dict[str, dict[str, int]] | None = None,
 ) -> dict:
     if not GENERATED_AT_RE.fullmatch(generated_at):
         raise PluginError("generated_at 须是 UTC，如 2026-10-13T00:00:00Z")
@@ -428,6 +612,7 @@ def build_index(
             previous_plugin=previous_by_id.get(plugin_id),
             records=by_id.get(plugin_id, []),
             assets=assets,
+            download_counts=download_counts,
         )
         if document is not None:
             plugins.append(document)
@@ -569,8 +754,15 @@ def main(argv: list[str]) -> int:
         action="store_true",
         help="regenerate ROOT/index.json from itself (after editing store.json)",
     )
+    parser.add_argument(
+        "--fetch-downloads",
+        action="store_true",
+        help="sum GitHub Release .mcplugin download counts into the index (GH_TOKEN)",
+    )
     args = parser.parse_args(argv)
     try:
+        if args.fetch_downloads and (args.lint or args.update or args.check is not None):
+            raise PluginError("--fetch-downloads 只用于生成要发布的索引，不能和 --check、--update、--lint 一起用")
         if args.lint:
             problems = lint(args.plugins)
             for problem in problems:
@@ -623,6 +815,10 @@ def main(argv: list[str]) -> int:
         generated_at = args.generated_at or _now()
         signed = bool(args.sign)
         key_id = args.key_id if signed else None
+        download_counts = None
+        if args.fetch_downloads:
+            token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or None
+            download_counts = fetch_download_counts(args.repo, token=token)
         assets: dict[str, bytes] = {}
         document = build_index(
             plugins_dir=args.plugins,
@@ -633,6 +829,7 @@ def main(argv: list[str]) -> int:
             signed=signed,
             key_id=key_id,
             assets=assets,
+            download_counts=download_counts,
         )
         text = _dumps(document)
         raw = text.encode("utf-8")

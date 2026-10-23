@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T03:36:07Z",
+  "generated_at": "2026-10-23T03:41:04Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -26,6 +26,7 @@
       },
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=cloud-115",
       "latest": "0.1.0-beta.2",
       "latest_stable": null,
       "versions": [
@@ -258,6 +259,7 @@
       },
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=movie-voice",
       "latest": "0.1.0",
       "latest_stable": "0.1.0",
       "versions": [
@@ -331,6 +333,7 @@
       "icon": null,
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=notifyhub",
       "latest": "2.3.0",
       "latest_stable": "2.3.0",
       "versions": [
@@ -416,6 +419,7 @@
       "icon": null,
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=openlist-direct-link",
       "latest": "0.1.0",
       "latest_stable": "0.1.0",
       "versions": [
@@ -482,6 +486,7 @@
       },
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=platform-discovery",
       "latest": "0.11.0",
       "latest_stable": "0.11.0",
       "versions": [
@@ -549,6 +554,7 @@
       "icon": null,
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=seed-scheduler",
       "latest": "1.1.0",
       "latest_stable": "1.1.0",
       "versions": [
@@ -631,6 +637,7 @@
       "icon": null,
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/o1xhack/movieclaw-trakt/issues/new",
       "latest": "0.2.3",
       "latest_stable": "0.2.3",
       "versions": [
@@ -713,6 +720,7 @@
       },
       "screenshots": [],
       "deprecated": null,
+      "feedback_url": "https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=watch-friends",
       "latest": "0.1.0",
       "latest_stable": "0.1.0",
       "versions": [

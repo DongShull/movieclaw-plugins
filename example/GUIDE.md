@@ -345,7 +345,8 @@ python3 scripts/pack.py example/hello-note --output /tmp/hello-note-0.1.0.mcplug
 | `license` | 是 | 这个插件的许可证。仓库许可证还没选定时写「见仓库许可证」 |
 | `origin` | 是 | 本仓库只能是 `official` |
 | `summary` | 是 | 市场卡片上的一句话，60 字以内。详细说明写清单的 `description` |
-| `homepage` | 否 | 不写就是本仓库里这个插件的目录 |
+| `homepage` | 否 | 不写就是本仓库里这个插件的目录。若写的是别的 GitHub 仓库根地址（`https://github.com/<owner>/<repo>`），反馈会去那个仓库 |
+| `issues_url` | 否 | 反馈发到这个地址，须是 `https://github.com/<owner>/<repo>/issues` 开头。写了就盖过 `homepage` |
 | `category` | 否 | `storage` `downloader` `messaging` `sites` `library` `tools` 之一。不写时按 `[requires]` 推断：`drive-backends` 是网盘，`downloader-adapters` 是下载器，`im-channels` 是消息通道，`site-classes` / `site-data-packs` 是站点，`ingest-steps` 是媒体库，其余是工具 |
 | `icon` | 否 | 插件目录里的 `.svg` / `.png` / `.webp`，256 KB 以内，SVG 里不能有脚本。不写时市场按分类给默认图标 |
 | `screenshots` | 否 | 插件目录里的图片路径数组，规则同 `icon` |
@@ -353,6 +354,14 @@ python3 scripts/pack.py example/hello-note --output /tmp/hello-note-0.1.0.mcplug
 | `deprecated` | 否 | `{"reason": "…", "replaced_by": "新插件 id 或 null"}`：整个插件不再维护 |
 
 图片由 CI 按内容命名后放到 `catalog` Release 上（`<id>-icon-<哈希>.svg`），索引里带 sha256。不接受外部网址；指向本仓库里这个插件目录的 raw 地址按目录里的文件处理。旧的 `min_app` / `max_app` / `app` 字段会被忽略，可以删掉。
+
+反馈：索引里的 `feedback_url` 是市场该打开的地址。没写 `issues_url`、`homepage` 也不是别的 GitHub 仓库时，它是本仓库的 issue 表单，只带插件 id，没有版本参数：
+
+`https://github.com/movieclaw/movieclaw-plugins/issues/new?template=plugin-feedback.yml&plugin=<id>`
+
+应用打开时再补 `plugin_version` 和 `movieclaw_version`。地址里已经有 `?` 就接 `&`，没有就接 `?`。表单字段 id 就是这三个参数名，外加 `description` 和 `steps`。表单会打上 `plugin-feedback`；issue 打开后，工作流在 id 已进入索引时再打 `plugin:<id>`。
+
+`downloads` 是这个插件各已发布版本的 `.mcplugin` 在 GitHub 上的下载次数之和，由发版和每天的 catalog 工作流写进签名索引。旧版应用不认识 `feedback_url` 和 `downloads`，会忽略。
 
 `CHANGELOG.md` 每个版本一节，标题是 `## <版本>`（可以带日期，如 `## 1.2.0 - 2026-10-21`）。这一节就是 Release 正文和市场里这一版的更新说明。打 tag 时没有这一节会直接失败，PR 上的 `--lint` 也会报。
 
@@ -362,7 +371,7 @@ python3 scripts/pack.py example/hello-note --output /tmp/hello-note-0.1.0.mcplug
 2. 推 tag `<id>-v<version>`，例如 `hello-note-v0.1.0`。
 3. `release.yml` 核对 tag、清单版本和 CHANGELOG，用钉死的 MovieClaw 再跑一遍 `check_plugin.py`，用 `scripts/pack.py` 打包，用这一版的 CHANGELOG 创建 Release（`--latest=false`）。然后在 `main` 上重生 `index.json`，签名后连同图片上传到 `catalog` Release，再把 `index.json` 提交回 `main`。
 
-只改元数据（简介、分类、图标、撤回、弃用）不用发版：
+只改元数据（简介、分类、图标、撤回、弃用、反馈地址）不用发版：
 
 1. 改 `store.json` 或图标，运行 `python3 scripts/generate_index.py --update`，把 `index.json` 一起提交。CI 的 `--check` 会核对两者一致。
 2. 合进 `main` 后 `catalog.yml` 自动签名并上传。也可以在 Actions 里手动运行它。

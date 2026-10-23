@@ -3,8 +3,15 @@
 # `python3 scripts/generate_index.py --update`. Also runs by hand (Actions →
 # catalog → Run workflow), e.g. after adding the signing key.
 #
+# The daily run refreshes per-plugin download counts on the signed index.
+# generated_at stays the committed stamp: MovieClaw drops an index whose
+# generated_at is older than the one it holds, so a cron-only stamp would hide
+# a later metadata publish. A new body with the same generated_at is accepted.
+#
 # The committed index.json is the source. This job checks that it still
 # reproduces from the tree, signs it, and uploads it with its images.
+# --check does not call the GitHub API. --fetch-downloads fills downloads on
+# the signed copy only; main keeps the last committed snapshot.
 
 name: catalog
 
@@ -13,6 +20,8 @@ on:
     branches: [main]
     paths:
       - index.json
+  schedule:
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -59,6 +68,7 @@ jobs:
           args=(
             python3 scripts/generate_index.py
             --previous index.json
+            --fetch-downloads
             --output dist/index.json
             --assets dist/assets
             --generated-at "$stamp"
