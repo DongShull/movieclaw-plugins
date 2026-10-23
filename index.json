@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "generated_at": "2026-10-23T03:34:59Z",
+  "generated_at": "2026-10-23T03:36:07Z",
   "signed": true,
   "key_id": "catalog-1",
   "repository": "https://github.com/movieclaw/movieclaw-plugins",
@@ -309,6 +309,91 @@
               "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/movie-voice-v0.1.0/movie-voice-0.1.0.mcplugin",
               "sha256": "b11f38567716a038339fab820f24070a97b772d3487554de304302fd3f042ad9",
               "size": 75395
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notifyhub",
+      "name": "企业微信直推",
+      "summary": "企业微信自建应用直推，支持入库、播放、上传文件名和中文模板。",
+      "description": "直连企业微信自建应用，支持海报图文、文本卡片和 Jinja2 中文模板，补充评分、类型、演员及简介。",
+      "category": "messaging",
+      "author": {
+        "name": "Migflyway",
+        "url": "https://github.com/Migflyway"
+      },
+      "homepage": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/notifyhub",
+      "repository": "https://github.com/movieclaw/movieclaw-plugins/tree/main/plugins/notifyhub",
+      "license": "见仓库许可证",
+      "origin": "official",
+      "icon": null,
+      "screenshots": [],
+      "deprecated": null,
+      "latest": "2.3.0",
+      "latest_stable": "2.3.0",
+      "versions": [
+        {
+          "version": "2.3.0",
+          "prerelease": false,
+          "released_at": "2026-10-23T03:36:07Z",
+          "yanked": null,
+          "notes": "- 企业微信自建应用直推，支持图文、文本卡片和中文 Jinja2 模板。\n- 订阅、下载、整理入库、媒体库新增、洗版、播放及系统通道告警。\n- 新增媒体默认合并 5 秒后处理，持续入账最多等待 15 秒开始处理；首次扫描和大批量事件保留汇总兜底。\n- 上传任务完成时显示确认成功的文件名及上传/秒传统计；部分失败单独标明。\n- 去重记录分片存储，每个值最多 32 KiB，修复超过 64 KB 后的重复投递。\n- 电影隐藏季集，电视剧合并新增集数；图片统一使用 MovieClaw 访问地址。\n- 保留 notifyhub ID，供已有用户继续升级并沿用设置。\n",
+          "changelog_url": "https://github.com/movieclaw/movieclaw-plugins/releases/tag/notifyhub-v2.3.0",
+          "source_url": "https://github.com/movieclaw/movieclaw-plugins/tree/notifyhub-v2.3.0/plugins/notifyhub",
+          "readme": {
+            "url": "https://raw.githubusercontent.com/movieclaw/movieclaw-plugins/notifyhub-v2.3.0/plugins/notifyhub/README.md",
+            "sha256": "eeb24a4521e22018dcb07e3b3c41cfa522b9ae6a9ff65a609fdb847cf28ed27a",
+            "size": 5064
+          },
+          "runtime": "process",
+          "sdk": "^1.0",
+          "requires": {
+            "plugin-data": "^1.0",
+            "kernel/durable-events": "^1.0",
+            "plugin-callbacks": "^1.0",
+            "plugin-routes": "^1.0",
+            "im-channels": "^1.0",
+            "host-ops": "^1.0",
+            "subscription.created": "^2.0",
+            "subscription.download_started": "^1.0",
+            "subscription.fulfilled": "^2.0",
+            "subscription.upgraded": "^1.0",
+            "download.completed": "^2.0",
+            "library.ingest.completed": "^1.0",
+            "library.items.arrived": "^1.0",
+            "library.files.added": "^2.0"
+          },
+          "platforms": [
+            "any"
+          ],
+          "permissions": {
+            "operations": [
+              "discover.get-title-details",
+              "library.items.get",
+              "subscriptions.get",
+              "members.show",
+              "jobs.list",
+              "jobs.events",
+              "library.list"
+            ],
+            "paths": [],
+            "network": true,
+            "callbacks": [
+              "playback"
+            ],
+            "events": []
+          },
+          "web": false,
+          "dependencies": null,
+          "artifacts": [
+            {
+              "platform": "any",
+              "filename": "notifyhub-2.3.0.mcplugin",
+              "url": "https://github.com/movieclaw/movieclaw-plugins/releases/download/notifyhub-v2.3.0/notifyhub-2.3.0.mcplugin",
+              "sha256": "d254f9f84d10c6f52e2bb539c8df5953b875426e14e2119cccff4fed936bd3fc",
+              "size": 190360
             }
           ]
         }
