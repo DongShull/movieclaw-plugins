@@ -52,7 +52,7 @@ jobs:
       - name: Lint plugins, check index.json, run script tests
         run: |
           set -euo pipefail
-          python3 -m pip install jsonschema
+          python3 -m pip install jsonschema pyyaml
           python3 scripts/generate_index.py --lint
           python3 -m unittest discover -s scripts/tests -t scripts -v
           python3 scripts/generate_index.py --check index.json

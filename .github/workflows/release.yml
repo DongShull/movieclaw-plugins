@@ -141,6 +141,7 @@ jobs:
           args=(
             python3 scripts/generate_index.py
             --previous index.json
+            --fetch-downloads
             --output dist/index.json
             --assets dist/assets
             --generated-at "$stamp"

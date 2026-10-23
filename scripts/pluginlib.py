@@ -29,10 +29,19 @@ ZIP_DATE = (2026, 10, 13, 0, 0, 0)
 REPO = "movieclaw/movieclaw-plugins"
 CATALOG_TAG = "catalog"
 
+# A repository root (homepage of the plugin's own repo) or an issues URL.
+_GH_OWNER = r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?"
+_GH_NAME = r"[A-Za-z0-9._-]{1,100}"
+GITHUB_REPO_URL_RE = re.compile(rf"^https://github\.com/({_GH_OWNER})/({_GH_NAME})/?$")
+GITHUB_ISSUES_URL_RE = re.compile(
+    rf"^https://github\.com/{_GH_OWNER}/{_GH_NAME}/issues(?:[/?#][^\s]*)?$"
+)
+
 STORE_REQUIRED = ("author", "license", "origin", "summary")
 STORE_OPTIONAL = (
     "author_url",
     "homepage",
+    "issues_url",
     "category",
     "icon",
     "screenshots",
@@ -208,6 +217,14 @@ def load_store(directory: Path) -> dict:
         value = data.get(key)
         if value is not None and not (isinstance(value, str) and value.startswith("https://")):
             raise PluginError(f"{path} 的 {key} 须是 https 地址或不写")
+    issues_url = data.get("issues_url", None)
+    if issues_url is not None and (
+        not isinstance(issues_url, str) or GITHUB_ISSUES_URL_RE.fullmatch(issues_url) is None
+    ):
+        raise PluginError(
+            f"{path} 的 issues_url 须是 GitHub issues 地址"
+            "（https://github.com/<owner>/<repo>/issues…），或不写"
+        )
     category = data.get("category")
     if category is not None and category not in CATEGORIES:
         raise PluginError(f"{path} 的 category 只能是 {'、'.join(CATEGORIES)} 之一，或不写（按接口推断）")
@@ -238,6 +255,7 @@ def load_store(directory: Path) -> dict:
         data["deprecated"] = {"reason": deprecated["reason"].strip(), "replaced_by": replaced}
     data.setdefault("author_url", None)
     data.setdefault("homepage", None)
+    data.setdefault("issues_url", None)
     data.setdefault("category", None)
     data.setdefault("icon", None)
     data["screenshots"] = shots
